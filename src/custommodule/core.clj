@@ -5,7 +5,8 @@
                      with-programs
                      let-programs]
              :as sh]
-            [clojure.string :as str]))
+            [clojure.string :as str])
+  (:gen-class))
 
 (defrecord Command [cmd data]
   ;; Implement the Lifecycle protocol
@@ -19,17 +20,19 @@
   (stop [this]
     this))
 
-(defn new-command [cmd]
-  (map->Command {:cmd cmd}))
+(defn execute-command [cmd]
+  (let [command (map->Command {:cmd cmd})
+        data (:data (.start command))]
+    (.stop command)
+    data))
 
-(defn get-data [command]
-  (:data (.start command)))
+(defn -get
+  [cmd]
+  {:status 200
+   :header {"Content-Type" "application/json"}
+   :body (execute-command cmd)})
 
 (defn -main
   "Test Command component"
   [& args]
-  (let [data
-        (get-data
-         (new-command
-          "for x in $(find /tmp/* -type d -prune);do du -sh $x; done"))]
-    (println data)))
+  (-get "for x in $(find /tmp/* -type d -prune);do du -sh $x; done"))
