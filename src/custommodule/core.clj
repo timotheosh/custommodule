@@ -6,7 +6,12 @@
                      let-programs]
              :as sh]
             [clojure.string :as str])
-  (:gen-class))
+  (:gen-class
+   :name custommodule.core
+   :methods [#^{:static true}
+             [GET [String] java.util.HashMap]
+             [POST [String] java.util.HashMap]
+             [HEAD [String] java.util.HashMap]]))
 
 (defrecord Command [cmd data]
   ;; Implement the Lifecycle protocol
@@ -26,7 +31,19 @@
     (.stop command)
     data))
 
-(defn -get
+(defn GET
+  [cmd]
+  {:status 200
+   :header {"Content-Type" "application/json"}
+   :body (execute-command cmd)})
+
+(defn POST
+  [cmd]
+  {:status 200
+   :header {"Content-Type" "application/json"}
+   :body (execute-command cmd)})
+
+(defn HEAD
   [cmd]
   {:status 200
    :header {"Content-Type" "application/json"}
@@ -35,4 +52,4 @@
 (defn -main
   "Test Command component"
   [& args]
-  (-get "for x in $(find /tmp/* -type d -prune);do du -sh $x; done"))
+  (GET "for x in $(find /tmp/* -type d -prune);do du -sh $x; done"))
